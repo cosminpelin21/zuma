@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Zuma/Zuma.vcxproj" Id="b89ed591-0c31-4722-b159-154bcf0750e1" />
+</Solution>
