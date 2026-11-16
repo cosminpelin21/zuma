@@ -6,6 +6,7 @@ enum class BallColor {
     Yellow,
     Green,
     Purple,
+    Pink,
     None
 };
 

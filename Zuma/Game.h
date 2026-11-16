@@ -1,38 +1,61 @@
 #pragma once
+#include "IGame.h"
 #include "Ball.h"
 #include <vector>
+#include <deque>
+#include <random>
 
-class Game {
+class Game : public IGame {
 private:
     GameState m_state;
     int m_score;
     int m_nextBallId;
-    std::vector<Ball> m_balls;
+
+    std::vector<Point2D> m_path;
+    float m_totalPathLength;
+
+    std::deque<Ball> m_trackBalls;
+    std::vector<Ball> m_firedBalls;
+    LauncherData m_launcher;
+
+    std::vector<IGameObserver*> m_observers;
+    std::mt19937 m_rng;
+
+    // Metode helper interne
+    void initDefaultPath();
+    Point2D getPointAtDistance(float distance) const;
+    BallColor generateRandomColor();
+    void updateTrackBalls(float deltaTime);
+    void updateFiredBalls(float deltaTime);
+    void checkCollisions();
+    void insertBallIntoTrack(size_t index, const Ball& firedBall);
+    void checkAndRemoveMatches(size_t insertedIndex);
+    void setState(GameState newState);
+    void addScore(int points);
+
+    void notifyBoardUpdated();
+    void notifyScoreChanged();
+    void notifyStateChanged();
 
 public:
     Game();
 
-    void start();
-    void pause();
-    void resume();
-    void update(float deltaTime);
+    void start() override;
+    void pause() override;
+    void resume() override;
+    void update(float deltaTime) override;
 
-    void spawnBall(Point2D position, BallColor color);
+    void aimAt(Point2D target) override;
+    void shoot() override;
+    void swapBalls() override;
 
-    int getScore() const 
-    { 
-        return m_score;
-    }
+    int getScore() const override { return m_score; }
+    GameState getState() const override { return m_state; }
+    LauncherData getLauncherData() const override { return m_launcher; }
+    std::vector<BallData> getTrackBallsData() const override;
+    std::vector<BallData> getFiredBallsData() const override;
+    std::vector<Point2D> getPathPoints() const override { return m_path; }
 
-    GameState getState() const 
-    {
-        return m_state;
-    }
-
-    const std::vector<Ball>& getBalls() const 
-    { 
-        return m_balls;
-    }
-
-    std::vector<BallData> getBallsData() const;
+    void addObserver(IGameObserver* observer) override;
+    void removeObserver(IGameObserver* observer) override;
 };
