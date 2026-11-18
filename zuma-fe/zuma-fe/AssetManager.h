@@ -20,6 +20,8 @@ class AssetManager {
 private:
     Texture2D m_turntableBase;
     bool m_hasTurntable;
+    Texture2D m_logoTexture;
+    bool m_hasLogo;
     std::map<MockBallColor, Texture2D> m_ballTextures;
     std::map<MockBallColor, bool> m_hasBallTexture;
 
@@ -32,4 +34,6 @@ public:
 
     void drawBall(Vector2 pos, float radius, MockBallColor color) const;
     void drawTurntable(Vector2 pos, float angleRadians) const;
+    const Texture2D& getLogo() const { return m_logoTexture; }
+    bool hasLogo() const { return m_hasLogo; }
 };

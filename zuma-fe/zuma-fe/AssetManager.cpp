@@ -2,7 +2,7 @@
 #include <cmath>
 #include <string>
 
-AssetManager::AssetManager() : m_hasTurntable(false) {}
+AssetManager::AssetManager() : m_hasTurntable(false), m_hasLogo(false) {}
 
 AssetManager::~AssetManager() {
     unloadAll();
@@ -24,6 +24,17 @@ void AssetManager::loadAll() {
         }
     }
 
+    std::string logoPng = basePath + "logo.png";
+    std::string logoJpg = basePath + "logo.jpg";
+    if (FileExists(logoPng.c_str())) {
+        m_logoTexture = LoadTexture(logoPng.c_str());
+        m_hasLogo = true;
+    }
+    else if (FileExists(logoJpg.c_str())) {
+        m_logoTexture = LoadTexture(logoJpg.c_str());
+        m_hasLogo = true;
+    }
+
     struct Mapping {
         MockBallColor color;
         std::string baseName;
@@ -42,18 +53,22 @@ void AssetManager::loadAll() {
         std::string pathJpg = basePath + m.baseName + ".jpg";
         std::string pathPng = basePath + m.baseName + ".png";
 
-        if (FileExists(pathJpg.c_str())) {
-            m_ballTextures[m.color] = LoadTexture(pathJpg.c_str());
-            m_hasBallTexture[m.color] = true;
-        }
-        else if (FileExists(pathPng.c_str())) {
+        if (FileExists(pathPng.c_str())) {
             m_ballTextures[m.color] = LoadTexture(pathPng.c_str());
             m_hasBallTexture[m.color] = true;
         }
+        else if (FileExists(pathJpg.c_str())) {
+            m_ballTextures[m.color] = LoadTexture(pathJpg.c_str());
+            m_hasBallTexture[m.color] = true;
+        } 
     }
 }
 
 void AssetManager::unloadAll() {
+    if (m_hasLogo) {
+        UnloadTexture(m_logoTexture);
+        m_hasLogo = false;
+    }
     for (auto& pair : m_ballTextures) {
         if (m_hasBallTexture[pair.first]) {
             UnloadTexture(pair.second);
