@@ -17,11 +17,16 @@ The application is modularly structured to keep game logic completely separated 
 * **Right Click / `Space`** — Swap current and next ball
 * **`P`** — Pause game
 * **`F`** — Toggle Fullscreen
+  
 ## How to Run
 
 1. Open `Zuma.slnx` in Visual Studio.
 2. Make sure dependencies from `vcpkg.json` (`raylib`) are installed.
 3. Set `zuma-fe` as the **Startup Project** and run (`F5`).
+
+## Preview
+
+![Disco Zuma Gameplay](image.png)
 
 ---
 
