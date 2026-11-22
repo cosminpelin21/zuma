@@ -1,56 +1,40 @@
 #pragma once
 #include "IScreen.h"
 #include "Button.h"
+#include "IGame.h"
 #include "AssetManager.h"
 #include <vector>
+#include <memory>
 
 class GameApplication;
 
-struct ChainBall {
-    float distanceAlongPath;
-    MockBallColor color;
-    float radius;
-};
-
-struct FiredBall {
-    Vector2 position;
-    Vector2 velocity;
-    MockBallColor color;
-    float radius;
-    bool active;
-};
-
-class GameplayScreen : public IScreen {
+class GameplayScreen : public IScreen, public IGameObserver {
 private:
     GameApplication& m_app;
-    int m_score;
-    MockGameState m_state;
+    std::unique_ptr<IGame> m_game;
+
+    int m_displayedScore = 0;
+    GameState m_currentState = GameState::Ready;
+    Vector2 m_vortexPosition{ 0.0f, 0.0f };
 
     Button m_pauseBtn;
     Button m_resumeBtn;
     Button m_menuBtn;
     Button m_playAgainBtn;
-
-    std::vector<Vector2> m_detailedPath;
-    std::vector<float> m_pathSegmentLengths;
-    float m_totalPathLength;
-
-    std::vector<ChainBall> m_trackBalls;
-    FiredBall m_activeFiredBall;
-    MockLauncherData m_launcher;
-    Vector2 m_vortexPosition;
-
-    void generateEllipticSpiralTrack();
-    Vector2 getPointAtDistance(float distance) const;
+    
     void renderTrack() const;
     void renderBalls() const;
     void renderLauncher() const;
     void renderOverlay(const char* title, Color titleColor, bool isPaused) const;
-    void resolveMatches(size_t insertedIndex);
-    MockBallColor getRandomAvailableColor() const;
 
 public:
     explicit GameplayScreen(GameApplication& app);
+    ~GameplayScreen() override;
+
+    void onBoardUpdated() override;
+    void onScoreChanged(int newScore) override;
+    void onGameStateChanged(GameState newState) override;
+
     void update(float deltaTime) override;
     void render() const override;
 };

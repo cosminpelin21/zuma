@@ -8,10 +8,16 @@
 class Game : public IGame {
 private:
     GameState m_state;
+    Difficulty m_difficulty;
     int m_score;
     int m_nextBallId;
 
+    float m_trackSpeed;
+    int m_initialBallCount;
+    int m_colorCount;
+
     std::vector<Point2D> m_path;
+    std::vector<float> m_segmentLengths;
     float m_totalPathLength;
 
     std::deque<Ball> m_trackBalls;
@@ -21,10 +27,10 @@ private:
     std::vector<IGameObserver*> m_observers;
     std::mt19937 m_rng;
 
-    // Metode helper interne
-    void initDefaultPath();
+    void initEllipticSpiralMap();
     Point2D getPointAtDistance(float distance) const;
-    BallColor generateRandomColor();
+    BallColor generateInitialColor();
+    BallColor generateLauncherColor();
     void updateTrackBalls(float deltaTime);
     void updateFiredBalls(float deltaTime);
     void checkCollisions();
@@ -40,6 +46,7 @@ private:
 public:
     Game();
 
+    void setDifficulty(Difficulty difficulty) override;
     void start() override;
     void pause() override;
     void resume() override;

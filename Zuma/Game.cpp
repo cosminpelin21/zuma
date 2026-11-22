@@ -3,12 +3,11 @@
 #include <algorithm>
 
 namespace {
+    constexpr float PI = 3.14159265f;
     constexpr float BALL_RADIUS = 15.0f;
     constexpr float BALL_DIAMETER = BALL_RADIUS * 2.0f;
-    constexpr float TRACK_SPEED = 45.0f;
-    constexpr float SHOT_SPEED = 550.0f;
-    constexpr int INITIAL_BALL_COUNT = 15;
-    constexpr int POINTS_PER_BALL = 10;
+    constexpr float SHOT_SPEED = 650.0f;
+    constexpr int POINTS_PER_BALL = 50;
 
     float distanceBetween(Point2D a, Point2D b) {
         float dx = b.x - a.x;
@@ -23,46 +22,80 @@ std::unique_ptr<IGame> createGame() {
 
 Game::Game()
     : m_state(GameState::Ready),
+    m_difficulty(Difficulty::Medium),
     m_score(0),
     m_nextBallId(1),
+    m_trackSpeed(40.0f),
+    m_initialBallCount(18),
+    m_colorCount(5),
     m_totalPathLength(0.0f),
     m_rng(std::random_device{}()) {
-    m_launcher.position = { 400.0f, 300.0f };
-    initDefaultPath();
+    setDifficulty(Difficulty::Medium);
+    initEllipticSpiralMap();
 }
 
-void Game::initDefaultPath() {
-    // Traseu simplu in forma de spirala rectangulara (fereastra 800x600)
-    m_path = {
-        { 50.0f,  50.0f },
-        { 750.0f, 50.0f },
-        { 750.0f, 550.0f },
-        { 50.0f,  550.0f },
-        { 50.0f,  150.0f },
-        { 650.0f, 150.0f },
-        { 650.0f, 450.0f },
-        { 180.0f, 450.0f },
-        { 180.0f, 300.0f } // Punctul final (craniul / gaura)
-    };
+void Game::setDifficulty(Difficulty difficulty) {
+    m_difficulty = difficulty;
+    switch (difficulty) {
+    case Difficulty::Easy:
+        m_trackSpeed = 25.0f;
+        m_initialBallCount = 14;
+        m_colorCount = 4;
+        break;
+    case Difficulty::Medium:
+        m_trackSpeed = 40.0f;
+        m_initialBallCount = 18;
+        m_colorCount = 5;
+        break;
+    case Difficulty::Hard:
+        m_trackSpeed = 60.0f;
+        m_initialBallCount = 24;
+        m_colorCount = 6;
+        break;
+    }
+}
 
+void Game::initEllipticSpiralMap() {
+    m_path.clear();
+    m_segmentLengths.clear();
     m_totalPathLength = 0.0f;
+
+    m_launcher.position = { 450.0f, 300.0f };
+
+    constexpr float cx = 400.0f;
+    constexpr float cy = 300.0f;
+    constexpr int steps = 500;
+
+    m_path.reserve(steps + 1);
+    for (int i = 0; i <= steps; ++i) {
+        float t = static_cast<float>(i) / steps;
+        float angle = t * 5.5f * PI;
+        float rx = 320.0f * (1.0f - 0.7f * t);
+        float ry = 220.0f * (1.0f - 0.7f * t);
+        m_path.push_back({ cx + rx * std::cos(angle), cy + ry * std::sin(angle) });
+    }
+
+    m_segmentLengths.reserve(m_path.size() - 1);
     for (size_t i = 1; i < m_path.size(); ++i) {
-        m_totalPathLength += distanceBetween(m_path[i - 1], m_path[i]);
+        float segLen = distanceBetween(m_path[i - 1], m_path[i]);
+        m_segmentLengths.push_back(segLen);
+        m_totalPathLength += segLen;
     }
 }
 
 Point2D Game::getPointAtDistance(float distance) const {
     if (m_path.empty()) return { 0.0f, 0.0f };
     if (distance <= 0.0f) return m_path.front();
+    if (distance >= m_totalPathLength) return m_path.back();
 
     float accumulated = 0.0f;
-    for (size_t i = 1; i < m_path.size(); ++i) {
-        float segLen = distanceBetween(m_path[i - 1], m_path[i]);
+    for (size_t i = 0; i < m_segmentLengths.size(); ++i) {
+        float segLen = m_segmentLengths[i];
         if (accumulated + segLen >= distance) {
             float t = (segLen > 0.0f) ? (distance - accumulated) / segLen : 0.0f;
             return {
-                m_path[i - 1].x + t * (m_path[i].x - m_path[i - 1].x),
-                m_path[i - 1].y + t * (m_path[i].y - m_path[i - 1].y)
+                m_path[i].x + t * (m_path[i + 1].x - m_path[i].x),
+                m_path[i].y + t * (m_path[i + 1].y - m_path[i].y)
             };
         }
         accumulated += segLen;
@@ -70,9 +103,29 @@ Point2D Game::getPointAtDistance(float distance) const {
     return m_path.back();
 }
 
-BallColor Game::generateRandomColor() {
-    std::uniform_int_distribution<int> dist(0, 3); // 4 culori de baza pentru match-uri mai usoare
+BallColor Game::generateInitialColor() {
+    std::uniform_int_distribution<int> dist(0, m_colorCount - 1);
     return static_cast<BallColor>(dist(m_rng));
+}
+
+BallColor Game::generateLauncherColor() {
+    if (m_trackBalls.empty()) {
+        return generateInitialColor();
+    }
+
+    std::vector<BallColor> availableColors;
+    for (const auto& ball : m_trackBalls) {
+        if (std::find(availableColors.begin(), availableColors.end(), ball.getColor()) == availableColors.end()) {
+            availableColors.push_back(ball.getColor());
+        }
+    }
+
+    if (availableColors.empty()) {
+        return generateInitialColor();
+    }
+
+    std::uniform_int_distribution<size_t> dist(0, availableColors.size() - 1);
+    return availableColors[dist(m_rng)];
 }
 
 void Game::start() {
@@ -81,15 +134,14 @@ void Game::start() {
     m_trackBalls.clear();
     m_firedBalls.clear();
 
-    // Generam sirul initial de bile (index 0 este prima bila, cea mai avansata pe traseu)
-    for (int i = 0; i < INITIAL_BALL_COUNT; ++i) {
-        float dist = static_cast<float>(INITIAL_BALL_COUNT - 1 - i) * BALL_DIAMETER;
-        BallColor color = generateRandomColor();
+    for (int i = 0; i < m_initialBallCount; ++i) {
+        float dist = static_cast<float>(m_initialBallCount - 1 - i) * BALL_DIAMETER;
+        BallColor color = generateInitialColor();
         m_trackBalls.emplace_back(m_nextBallId++, getPointAtDistance(dist), color, BALL_RADIUS, dist);
     }
 
-    m_launcher.currentColor = generateRandomColor();
-    m_launcher.nextColor = generateRandomColor();
+    m_launcher.currentColor = generateLauncherColor();
+    m_launcher.nextColor = generateLauncherColor();
 
     setState(GameState::Playing);
     notifyScoreChanged();
@@ -127,7 +179,7 @@ void Game::shoot() {
     m_firedBalls.push_back(projectile);
 
     m_launcher.currentColor = m_launcher.nextColor;
-    m_launcher.nextColor = generateRandomColor();
+    m_launcher.nextColor = generateLauncherColor();
 }
 
 void Game::swapBalls() {
@@ -156,8 +208,7 @@ void Game::update(float deltaTime) {
 void Game::updateTrackBalls(float deltaTime) {
     if (m_trackBalls.empty()) return;
 
-    // Ultima bila (coada) impinge tot sirul in fata
-    float backDist = m_trackBalls.back().getDistance() + TRACK_SPEED * deltaTime;
+    float backDist = m_trackBalls.back().getDistance() + m_trackSpeed * deltaTime;
     m_trackBalls.back().setDistance(backDist);
     m_trackBalls.back().setPosition(getPointAtDistance(backDist));
 
@@ -179,7 +230,6 @@ void Game::updateFiredBalls(float deltaTime) {
         ball.move(vel.x * deltaTime, vel.y * deltaTime);
     }
 
-    // Eliminam bilele iesite mult in afara ecranului
     m_firedBalls.erase(
         std::remove_if(m_firedBalls.begin(), m_firedBalls.end(), [](const Ball& b) {
             Point2D p = b.getPosition();
@@ -213,7 +263,6 @@ void Game::insertBallIntoTrack(size_t index, const Ball& firedBall) {
 
     m_trackBalls.insert(m_trackBalls.begin() + index, newBall);
 
-    // Impingem bilele din fata (de la index-1 spre 0) ca sa faca loc bilei inserate
     for (int i = static_cast<int>(index) - 1; i >= 0; --i) {
         float neededDist = m_trackBalls[i + 1].getDistance() + BALL_DIAMETER;
         if (m_trackBalls[i].getDistance() < neededDist) {
@@ -243,6 +292,11 @@ void Game::checkAndRemoveMatches(size_t insertedIndex) {
     if (count >= 3) {
         m_trackBalls.erase(m_trackBalls.begin() + left, m_trackBalls.begin() + right + 1);
         addScore(count * POINTS_PER_BALL);
+
+        if (!m_trackBalls.empty()) {
+            m_launcher.currentColor = generateLauncherColor();
+            m_launcher.nextColor = generateLauncherColor();
+        }
     }
 }
 

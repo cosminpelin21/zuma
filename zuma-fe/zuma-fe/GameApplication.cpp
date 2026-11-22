@@ -5,7 +5,7 @@
 #include "raylib.h"
 
 GameApplication::GameApplication()
-    : m_difficulty(UIDifficulty::Medium), m_shouldExit(false) {
+    : m_difficulty(Difficulty::Medium), m_shouldExit(false) {
     InitWindow(UITheme::SCREEN_WIDTH, UITheme::SCREEN_HEIGHT, "Disco Zuma");
     SetTargetFPS(60);
 

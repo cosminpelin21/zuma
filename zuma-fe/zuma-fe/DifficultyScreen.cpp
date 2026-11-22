@@ -12,15 +12,15 @@ DifficultyScreen::DifficultyScreen(GameApplication& app)
 
 void DifficultyScreen::update(float deltaTime) {
     if (m_easyBtn.isClicked()) {
-        m_app.setDifficulty(UIDifficulty::Easy);
+        m_app.setDifficulty(Difficulty::Easy);
         m_app.switchToGameplay();
     }
     else if (m_mediumBtn.isClicked()) {
-        m_app.setDifficulty(UIDifficulty::Medium);
+        m_app.setDifficulty(Difficulty::Medium);
         m_app.switchToGameplay();
     }
     else if (m_hardBtn.isClicked()) {
-        m_app.setDifficulty(UIDifficulty::Hard);
+        m_app.setDifficulty(Difficulty::Hard);
         m_app.switchToGameplay();
     }
     else if (m_backBtn.isClicked()) {

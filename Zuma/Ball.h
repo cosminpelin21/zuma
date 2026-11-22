@@ -7,8 +7,8 @@ private:
     Point2D m_position;
     BallColor m_color;
     float m_radius;
-    float m_distanceAlongPath; // Pentru bilele de pe traseu
-    Point2D m_velocity;        // Pentru bilele trase din lansator
+    float m_distanceAlongPath;
+    Point2D m_velocity;       
 
 public:
     Ball(int id, Point2D position, BallColor color, float radius = 15.0f, float distance = 0.0f);

@@ -17,3 +17,6 @@ enum class GameState {
     GameOver,
     Victory
 };
+
+enum class Difficulty 
+{ Easy, Medium, Hard };

@@ -1,28 +1,6 @@
 #pragma once
 #include "raylib.h"
-
-enum class UIDifficulty {
-    Easy,
-    Medium,
-    Hard
-};
-
-enum class MockBallColor {
-    Red,
-    Blue,
-    Yellow,
-    Green,
-    Purple,
-    Pink,
-    None
-};
-
-enum class MockGameState {
-    Playing,
-    Paused,
-    GameOver,
-    Victory
-};
+#include "Enums.h"
 
 namespace UITheme {
     constexpr int SCREEN_WIDTH = 800;
@@ -35,14 +13,14 @@ namespace UITheme {
     constexpr Color TRACK_OUTER = { 45, 20, 80, 255 };
     constexpr Color TRACK_INNER = { 160, 80, 255, 180 };
 
-    inline Color mapBallColor(MockBallColor color) {
+    inline Color mapBallColor(BallColor color) {
         switch (color) {
-        case MockBallColor::Red:    return { 255, 50, 70, 255 };
-        case MockBallColor::Blue:   return { 0, 210, 255, 255 };
-        case MockBallColor::Yellow: return { 255, 225, 40, 255 };
-        case MockBallColor::Green:  return { 50, 235, 110, 255 };
-        case MockBallColor::Purple: return { 180, 60, 255, 255 };
-        case MockBallColor::Pink:   return { 255, 60, 190, 255 };
+        case BallColor::Red:    return { 255, 50, 70, 255 };
+        case BallColor::Blue:   return { 0, 210, 255, 255 };
+        case BallColor::Yellow: return { 255, 225, 40, 255 };
+        case BallColor::Green:  return { 50, 235, 110, 255 };
+        case BallColor::Purple: return { 180, 60, 255, 255 };
+        case BallColor::Pink:   return { 255, 60, 190, 255 };
         default:                    return BLANK;
         }
     }

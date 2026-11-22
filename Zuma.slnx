@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="zuma-fe/zuma-fe/zuma-fe.vcxproj" Id="080cc0f5-0c29-4f12-93b6-41902fd79475" />
   <Project Path="Zuma/Zuma.vcxproj" Id="b89ed591-0c31-4722-b159-154bcf0750e1" />
 </Solution>

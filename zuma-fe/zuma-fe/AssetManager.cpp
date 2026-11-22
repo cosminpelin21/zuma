@@ -36,17 +36,17 @@ void AssetManager::loadAll() {
     }
 
     struct Mapping {
-        MockBallColor color;
+        BallColor color;
         std::string baseName;
     };
 
     Mapping maps[] = {
-        { MockBallColor::Red, "ball_red" },
-        { MockBallColor::Blue, "ball_blue" },
-        { MockBallColor::Yellow, "ball_yellow" },
-        { MockBallColor::Green, "ball_green" },
-        { MockBallColor::Purple, "ball_purple" },
-        { MockBallColor::Pink, "ball_pink" }
+        { BallColor::Red, "ball_red" },
+        { BallColor::Blue, "ball_blue" },
+        { BallColor::Yellow, "ball_yellow" },
+        { BallColor::Green, "ball_green" },
+        { BallColor::Purple, "ball_purple" },
+        { BallColor::Pink, "ball_pink" }
     };
 
     for (const auto& m : maps) {
@@ -78,8 +78,8 @@ void AssetManager::unloadAll() {
     m_hasBallTexture.clear();
 }
 
-void AssetManager::drawBall(Vector2 pos, float radius, MockBallColor color) const {
-    if (color == MockBallColor::None) return;
+void AssetManager::drawBall(Vector2 pos, float radius, BallColor color) const {
+    if (color == BallColor::None) return;
 
     auto itTex = m_ballTextures.find(color);
     auto itHas = m_hasBallTexture.find(color);

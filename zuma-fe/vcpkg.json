@@ -1,1 +1,6 @@
-﻿{"dependencies":["raylib"]}
+{
+  "dependencies": [
+    "raylib"
+  ],
+  "builtin-baseline": "c73f6e0a95da13e19de787522f2c64c2b1f97941"
+}
